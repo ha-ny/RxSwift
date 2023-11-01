@@ -33,10 +33,9 @@ class NicknameViewController: UIViewController {
         nicknameTextField.rx.text.orEmpty.bind(to: nickName).disposed(by: disposeBag)
         isNextButtonHidden.bind(to: nextButton.rx.isHidden).disposed(by: disposeBag)
 
-        nickName.map{ $0.count > 2 && $0.count < 6 }
-            .subscribe(with: self) { owner, value in
-                owner.isNextButtonHidden.onNext(!value)
-            }.disposed(by: disposeBag)
+        nickName.map{ $0.count > 2 && $0.count < 6 }.subscribe(with: self) { owner, value in
+            owner.isNextButtonHidden.onNext(!value)
+        }.disposed(by: disposeBag)
     }
     
     @objc func nextButtonClicked() {

@@ -33,10 +33,12 @@ class PhoneViewController: UIViewController {
         phoneTextField.rx.text.orEmpty.bind(to: phoneNumber).disposed(by: disposeBag)
         nextButtonColor.bind(to: nextButton.rx.backgroundColor).disposed(by: disposeBag)
         isButtonEnable.bind(to: nextButton.rx.isEnabled).disposed(by: disposeBag)
+        
         phoneNumber.map { $0.formated(by: "###-####-####") }.subscribe(with: self) { owner, value in
             owner.phoneTextField.rx.text.onNext(value)
             owner.nextButtonColor.onNext(value.count == 13 ? .blue : .red)
         }.disposed(by: disposeBag)
+        
         nextButtonColor.map{ $0 == .blue }.subscribe(with: self) { owner, value in
             owner.isButtonEnable.onNext(value)
         }.disposed(by: disposeBag)

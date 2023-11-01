@@ -68,18 +68,53 @@ class BirthdayViewController: UIViewController {
   
     let nextButton = PointButton(title: "가입하기")
     
+    var year = BehaviorSubject(value: 2023)
+    var month = BehaviorSubject(value: 11)
+    var day = BehaviorSubject(value: 02)
+    var isSignButtonEnable = BehaviorSubject(value: false)
+    var isSign = BehaviorSubject(value: "")
+    
+    let disposeBag = DisposeBag()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
         view.backgroundColor = Color.white
-        
         configureLayout()
-        
         nextButton.addTarget(self, action: #selector(nextButtonClicked), for: .touchUpInside)
+        
+        bind()
+    }
+    
+    func bind() {
+        isSignButtonEnable.bind(to: nextButton.rx.isEnabled).disposed(by: disposeBag)
+        isSign.bind(to: infoLabel.rx.text).disposed(by: disposeBag)
+        
+        birthDayPicker.rx.date.changed.bind(with: self, onNext: { owner ,day in
+            let date = Calendar.current.dateComponents([.year, .month, .day], from: day)
+            owner.year.onNext(date.year!)
+            owner.month.onNext(date.month!)
+            owner.day.onNext(date.day!)
+            
+            let is17YearsOld = Calendar.current.date(byAdding: .year, value: 17, to: day)! <= Date()
+            owner.isSignButtonEnable.onNext(is17YearsOld)
+            owner.isSign.onNext(is17YearsOld ? "가입이 가능합니다" : "만 17세 이상만 가입 가능합니다.")
+        }).disposed(by: disposeBag)
+        
+        year.subscribe(with: self) { owner, value in
+            owner.yearLabel.text = "\(value)년"
+        }.disposed(by: disposeBag)
+
+        month.subscribe(with: self) { owner, value in
+            owner.monthLabel.text = "\(value)월"
+        }.disposed(by: disposeBag)
+        
+        day.subscribe(with: self) { owner, value in
+            owner.dayLabel.text = "\(value)일"
+        }.disposed(by: disposeBag)
     }
     
     @objc func nextButtonClicked() {
-        print("가입완료")
+       print("가입완료")
     }
 
     
