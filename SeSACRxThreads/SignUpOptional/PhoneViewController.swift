@@ -12,17 +12,29 @@ import RxCocoa
 
 class PhoneViewController: UIViewController {
    
+    let phoneNumber = BehaviorSubject(value: "010")
+    let nextButtonColor = BehaviorSubject(value: UIColor.red)
+    let disposeBag = DisposeBag()
+    
     let phoneTextField = SignTextField(placeholderText: "연락처를 입력해주세요")
     let nextButton = PointButton(title: "다음")
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         view.backgroundColor = Color.white
-        
         configureLayout()
-        
         nextButton.addTarget(self, action: #selector(nextButtonClicked), for: .touchUpInside)
+        
+        bind()
+    }
+    
+    func bind() {
+        phoneTextField.rx.text.orEmpty.bind(to: phoneNumber).disposed(by: disposeBag)
+        nextButtonColor.bind(to: nextButton.rx.backgroundColor).disposed(by: disposeBag)
+        phoneNumber.map { $0.formated(by: "###-####-####") }.subscribe(with: self) { owner, value in
+            owner.phoneTextField.rx.text.onNext(value)
+            owner.nextButtonColor.onNext(value.count == 13 ? .blue : .red)
+        }.disposed(by: disposeBag)
     }
     
     @objc func nextButtonClicked() {
