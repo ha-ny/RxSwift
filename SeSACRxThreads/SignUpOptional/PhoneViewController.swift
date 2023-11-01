@@ -14,6 +14,7 @@ class PhoneViewController: UIViewController {
    
     let phoneNumber = BehaviorSubject(value: "010")
     let nextButtonColor = BehaviorSubject(value: UIColor.red)
+    let isButtonEnable = BehaviorSubject(value: false)
     let disposeBag = DisposeBag()
     
     let phoneTextField = SignTextField(placeholderText: "연락처를 입력해주세요")
@@ -31,9 +32,13 @@ class PhoneViewController: UIViewController {
     func bind() {
         phoneTextField.rx.text.orEmpty.bind(to: phoneNumber).disposed(by: disposeBag)
         nextButtonColor.bind(to: nextButton.rx.backgroundColor).disposed(by: disposeBag)
+        isButtonEnable.bind(to: nextButton.rx.isEnabled).disposed(by: disposeBag)
         phoneNumber.map { $0.formated(by: "###-####-####") }.subscribe(with: self) { owner, value in
             owner.phoneTextField.rx.text.onNext(value)
             owner.nextButtonColor.onNext(value.count == 13 ? .blue : .red)
+        }.disposed(by: disposeBag)
+        nextButtonColor.map{ $0 == .blue }.subscribe(with: self) { owner, value in
+            owner.isButtonEnable.onNext(value)
         }.disposed(by: disposeBag)
     }
     
